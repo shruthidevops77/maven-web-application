@@ -1,0 +1,81 @@
+pipeline
+{
+agent any 
+
+tools {
+maven 'maven3.8.4'
+}
+triggers {
+  githubPush()
+}
+options {
+  buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
+   timestamps()
+}
+
+
+
+stages {
+stage ('checkout code') {
+steps {
+git branch: 'development', credentialsId: 'dd650239-6089-4f76-ab5f-e596a2cf5d7e', url: 'https://github.com/Purvansh-MedicalCare/maven-web-application.git'
+}
+}
+stage ('build') {
+steps {
+sh "mvn clean package"
+}
+}
+stage ('sonarqube report') {
+steps {
+sh "mvn sonar:sonar"
+}
+}
+stage ('upload the arctifact into nexus') {
+steps {
+sh "mvn deploy"
+}
+}
+stage ('deploy the application into tomcat') {
+steps {
+sshagent(['e9f12fe8-a5e3-4d12-8894-a01491ba3cb9']) { 
+    
+
+	
+	sh "scp -o  StrictHostKeyChecking=no target/maven-web-application.war ec2-user@13.233.98.203:/opt/apache-tomcat-9.0.54/webapps"
+}
+}
+
+
+}
+
+
+}//stage closed
+
+post {
+  always {
+    emailext body: '''build over
+
+Regards
+bhavani''', subject: 'build over', to: 'bhavaniaddanki14@gmail.com'
+  }
+  aborted {
+   emailext body: '''build is cancelled
+
+Regards
+bhavani''', subject: 'build over', to: 'bhavaniaddanki14@gmail.com'
+  }
+  success {
+    emailext body: '''build is sucess
+
+Regards
+bhavani''', subject: 'build over', to: 'bhavaniaddanki14@gmail.com'
+  }
+  failure {
+    emailext body: '''build is failur
+
+Regards
+bhavani''', subject: 'build over', to: 'bhavaniaddanki14@gmail.com'
+  }
+}
+}//pipeline closed
