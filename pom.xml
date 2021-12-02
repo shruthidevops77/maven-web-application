@@ -97,11 +97,11 @@
 	
 	<distributionManagement>
 	
-	    <!--<repository>
+	   <repository>
 	      <id>nexus</id>
 	      <name>Mithun Technologies Releases Nexus Repository</name>
 	      <url>http://65.2.82.91:8081/repository/wallmart-release/</url>
-	    </repository> --> 
+	    </repository> 
 	    
 	 <snapshotRepository>
 	      <id>nexus</id>
