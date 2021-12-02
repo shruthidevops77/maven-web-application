@@ -1,0 +1,39 @@
+
+node
+{
+def mavenHome = tool name: "maven3.8.4"
+    stage('checkout code') {
+        
+        git branch: 'development', credentialsId: 'dd650239-6089-4f76-ab5f-e596a2cf5d7e', url: 'https://github.com/Purvansh-MedicalCare/maven-web-application.git'
+        
+    }
+    stage('build') {
+        sh "${mavenHome}/bin/mvn clean package"
+    }
+	stage('execute sonarqube report') {
+	sh "${mavenHome}/bin/mvn sonar:sonar"
+
+	
+	}
+	stage ('upload artifact into nexus') {
+	sh "${mavenHome}/bin/mvn deploy"
+	
+	}
+	stage ('Deploy application into tomcat sever') {
+	sshagent(['e9f12fe8-a5e3-4d12-8894-a01491ba3cb9']) { 
+    
+
+	
+	sh "scp -o  StrictHostKeyChecking=no target/maven-web-application.war ec2-user@3.110.224.133:/opt/apache-tomcat-9.0.54/webapps/"
+	
+	
+	}
+    }
+    stage ('Send Email notification') {
+        emailext body: '''build over
+
+Regards
+bhavani''', subject: 'build over', to: 'bhavaniaddanki14@gmail.com'
+        
+    }
+}
