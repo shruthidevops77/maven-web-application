@@ -1,8 +1,8 @@
 pipeline
 {
-agent 
+agent any
     label 'node1-wallmart'
-    }
+    
 
 tools {
 maven 'maven3.8.4'
