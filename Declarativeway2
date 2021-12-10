@@ -7,11 +7,7 @@ label 'node-wallmart'
     tools {
         maven 'maven3.8.4'
     }
-   triggers {
- /* pollSCM('* * * * *') */
- /* cron('* * * * *') */
-   /* githubPush() */
-}
+   
 
 options {
   buildDiscarder logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')
