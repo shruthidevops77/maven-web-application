@@ -1,0 +1,28 @@
+node {
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'RebuildSettings', autoRebuild: false, rebuildDisabled: false], [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+    
+    def mavenHome = tool name:"maven3.8.4"
+    stage ('checkout code"') {
+      git branch: 'development', credentialsId: 'c7687e20-e80a-4da0-b2ed-69e7779e41fd', url: 'https://github.com/Purvansh-MedicalCare/maven-web-application.git'  
+    }
+    stage ('build') {
+        sh "${mavenHome}/bin/mvn clean package"
+    }
+    stage ('Execute sonarqube report') {
+        sh "${mavenHome}/bin/mvn sonar:sonar"
+    } 
+    stage ('upload the artificats into nexus') {
+        sh "${mavenHome}/bin/mvn deploy"
+    }
+    stage ('Deploy application into Tomcat Server') {
+     sshagent(['a549c149-05de-4b88-b3ed-f8ac9c400541']) {
+    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@13.235.80.31:/opt/apache-tomcat-9.0.56/webapps/"
+}   
+    }
+    stage ('Send Email Notification') {
+       emailext body: '''Build over
+
+Regards
+Bhavani''', subject: 'Build over', to: 'bhavaniaddanki14@gmail.com' 
+    }
+}
